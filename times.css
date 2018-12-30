@@ -1,0 +1,15 @@
+.visitorview {
+    display: none;
+}
+
+.visitor .visitorview {
+    display: block;
+}
+
+.entranceview {
+    display: none;
+}
+
+.entrance .entranceview {
+    display: block;
+}
