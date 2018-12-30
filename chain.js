@@ -20,3 +20,7 @@ export function postTransaction(tx) {
     const txSigned = BigchainDB.Transaction.signTransaction(tx, me().privateKey)
     return conn.postTransactionCommit(txSigned)
 }
+
+export function listOutputs(publicKey) {
+    return conn.listOutputs(publicKey, false)
+}

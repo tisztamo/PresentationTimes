@@ -43,9 +43,7 @@ export function giveTokens(token, receiver, amount) {
                         .makeEd25519Condition(receiver.publicKey),
                     amount.toString())
             ],
-            {
-                tokens_left: token.tokensLeft - amount
-            }
+            null
         )
 
         return postTransaction(tx).then(tx => {
