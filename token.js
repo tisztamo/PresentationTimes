@@ -1,6 +1,6 @@
 import { me, postTransaction, getTransaction } from "./chain.js"
 
-export function tokenLaunch(nTokens=5*5*1000) {
+export function tokenLaunch(nTokens=1000000) {
     const creator = me()
     const tx = BigchainDB.Transaction.makeCreateTransaction({
             token: 'BPNT Time Token',
