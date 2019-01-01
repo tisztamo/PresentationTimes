@@ -1,28 +1,33 @@
-import {listOutputs,getTransaction} from "./chain.js";
+import {selectedToken,getOwnedTokens} from "./token";
 
-export function visitor() {
-    const keys = document.location.search.substr("?visitor=".length).split(",")
-    const visitor = {
-        publicKey: keys[0],
-        privatekey: keys[1],
-        tokens: []
-    }
-    listOutputs(visitor.publicKey).then(outputs => {
-        Promise.all(outputs.map(output => getTransaction(output.transaction_id))).then(txs => {
-            if (txs.length !== 1) {
-                console.warn("Should have exactly one tx with unspent output, but found: ", txs)
-            }
-            const amount = txs[0].outputs[1].amount
-            visitor.tokens.push({
-                amount,
-                id: txs[0].id,
-            })
-            document.getElementById("tokens").innerText=amount;
-            return visitor
+export const VisitorPage = Vue.component('visitor-page', {
+    data: function () {
+        return {
+            selectedToken,
+            me: null
+        }
+    },
+    created: function() {
+        const keys = document.location.search.substr("?keys=".length).split(",")
+        this.me = {
+            publicKey: keys[0],
+            privateKey: keys[1],
+            tokens: null
+        }
+        getOwnedTokens(this.me.publicKey).then(ownedTokens => {
+            this.me.tokens = ownedTokens
         })
-    })
-}
-
-export function vote() {
-
-}
+    },
+    methods: {
+        vote: function() {
+            alert(42)
+        }
+    },
+    template: `
+<div>
+    <div v-if="me.tokens">Tokens: {{me.tokens.total}}</div>
+    <div>{{me}}</div>
+    <button @click="vote()">Vote</button>
+</div>
+`
+})

@@ -1,26 +1,21 @@
-import { me, postTransaction, createIdentity, API_PATH } from "./chain.js"
-import { tokenLaunch } from "./token.js"
-import { QRCode } from "./lib/qrcode.js";
+import {app} from "./main.js"
+import {createIdentity} from "./chain.js"
+import {selectedToken} from "./token.js"
+import {QRCode} from "./lib/qrcode.js";
+import {token} from "./host.js"
 
-function prepareToken() {
-    return tokenLaunch().then(token => {
-            console.log("Token created: " + token.id)
-            return token
-        }
-    )
-}
-
-function createVisitor(token) {
+function createVisitor() {
     const visitor = createIdentity()
-    return token.issue(visitor, 5 * 5).then(res => {
+    return selectedToken.issue(visitor, 5 * 5).then(res => {
         return visitor
     })
 }
 
-function createQR(visitor) {
-    const target =  document.URL + "?visitor=" + visitor.publicKey + "," + visitor.privateKey
+function createVisitorQR(visitor) {
+    const target =  location.origin + location.pathname + "?keys=" + visitor.publicKey + "," + visitor.privateKey + "#visitor"
     console.log(target)
-    var qrcode = new QRCode(document.getElementById("qrcode"), {
+    document.getElementById("qrcode").innerHTML = '';
+    const qrcode = new QRCode(document.getElementById("qrcode"), {
         text: target,
         width: 384,
         height: 384,
@@ -30,8 +25,28 @@ function createQR(visitor) {
     })
 }
 
-export function entrance() {
-    prepareToken().then(createVisitor).then(visitor => {
-        createQR(visitor)
-    })
-}
+export const EntrancePage = Vue.component('entrance-page', {
+    data: function () {
+        return {
+            selectedToken
+        }
+    },
+    methods: {
+        newVisitor: function() {
+            createVisitor().then(visitor => {
+                createVisitorQR(visitor)
+            })
+        },
+        host: function() {
+            app.route("")
+        }
+    },
+    template: `
+<div>
+    <div v-if="selectedToken">Token: {{selectedToken.id}}</div>
+    <button @click="newVisitor()">New Visitor</button>
+    <button @click="host()">Host View</button>
+    <div id="qrcode"></div>
+</div>
+`
+})

@@ -1,4 +1,7 @@
 import { me, postTransaction, getTransaction } from "./chain.js"
+import {listOutputs} from "./chain";
+
+export let selectedToken = null
 
 export function tokenLaunch(nTokens=1000000) {
     const creator = me()
@@ -15,7 +18,7 @@ export function tokenLaunch(nTokens=1000000) {
     )
 
     return postTransaction(tx).then(res => {
-        return {
+        selectedToken = {
             id: res.id,
             tokensLeft: nTokens,
             creator: creator,
@@ -24,6 +27,7 @@ export function tokenLaunch(nTokens=1000000) {
                 return giveTokens(this, receiver, amount)
             }
         }
+        return selectedToken
     })
 }
 
@@ -49,6 +53,23 @@ export function giveTokens(token, receiver, amount) {
         return postTransaction(tx).then(tx => {
             token.tokensLeft -= amount
             return tx
+        })
+    })
+}
+
+//TODO filter by token type
+export function getOwnedTokens(publicKey) {
+    return listOutputs(publicKey).then(outputs => {
+        return Promise.all(outputs.map(output => getTransaction(output.transaction_id))).then(txs => {
+            let total = 0;
+            for (let i = 0; i < outputs.length; i++) {
+                const amount = txs[i].outputs[outputs[i].output_index].amount
+                total += Number(amount)
+            }
+            return {
+                total,
+                transactions: txs
+            }
         })
     })
 }
