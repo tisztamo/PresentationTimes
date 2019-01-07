@@ -1,6 +1,6 @@
-import {HostPage} from "./host.js"
-import {EntrancePage} from "./entrance.js";
-import {VisitorPage} from "./visitor.js";
+import {HostPage} from "./hostpage.js"
+import {EntrancePage} from "./entrancepage.js";
+import {VisitorPage} from "./visitorpage.js";
 
 const NotFound = { template: '<p>Page not found</p>' }
 

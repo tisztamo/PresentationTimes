@@ -1,12 +1,11 @@
 import {app} from "./main.js"
 import {createIdentity} from "./chain.js"
-import {selectedToken} from "./token.js"
+import {selectedToken,giveTokens} from "./token.js"
 import {QRCode} from "./lib/qrcode.js";
-import {token} from "./host.js"
 
 function createVisitor() {
     const visitor = createIdentity()
-    return selectedToken.issue(visitor, 5 * 5).then(res => {
+    return giveTokens(selectedToken, visitor, 5 * 5).then(res => {
         return visitor
     })
 }
@@ -44,8 +43,8 @@ export const EntrancePage = Vue.component('entrance-page', {
     template: `
 <div>
     <div v-if="selectedToken">Token: {{selectedToken.id}}</div>
-    <button @click="newVisitor()">New Visitor</button>
-    <button @click="host()">Host View</button>
+    <v-btn @click="newVisitor()">New Visitor</v-btn>
+    <v-btn @click="host()">Host View</v-btn>
     <div id="qrcode"></div>
 </div>
 `

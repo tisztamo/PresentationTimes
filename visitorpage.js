@@ -1,21 +1,24 @@
-import {selectedToken,getOwnedTokens} from "./token";
+import {selectedToken,getOwnedTokens} from "./token.js";
+import {setMe,me} from "./chain.js";
 
 export const VisitorPage = Vue.component('visitor-page', {
     data: function () {
         return {
             selectedToken,
-            me: null
+            me: null,
+            tokens: null
         }
     },
     created: function() {
         const keys = document.location.search.substr("?keys=".length).split(",")
-        this.me = {
+        setMe({
             publicKey: keys[0],
             privateKey: keys[1],
             tokens: null
-        }
-        getOwnedTokens(this.me.publicKey).then(ownedTokens => {
-            this.me.tokens = ownedTokens
+        })
+        this.me = me()
+        getOwnedTokens(me().publicKey).then(ownedTokens => {
+            this.tokens = ownedTokens
         })
     },
     methods: {
@@ -25,9 +28,8 @@ export const VisitorPage = Vue.component('visitor-page', {
     },
     template: `
 <div>
-    <div v-if="me.tokens">Tokens: {{me.tokens.total}}</div>
-    <div>{{me}}</div>
-    <button @click="vote()">Vote</button>
+    <div v-if="tokens">Tokens: {{tokens.total}}</div>
+    <v-btn @click="vote()">Vote</v-btn>
 </div>
 `
 })
