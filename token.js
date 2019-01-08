@@ -28,20 +28,26 @@ export function tokenLaunch(nTokens=1000000) {
     })
 }
 
-export function giveTokens(token, receiver, amount, metadata = null) {
-   return getOwnedTokens(token.creator.publicKey).then(ownedTokens => {
-        const tx = BigchainDB.Transaction.makeTransferTransaction(
+export function giveTokens(token, receiverPubKey, amount, metadata = null) {
+   return getOwnedTokens(me().publicKey).then(ownedTokens => {
+       const sourceTx = ownedTokens.transactions[0]
+       const sourceAmount = Number(sourceTx.outputs[sourceTx.ownerOutputIdx].amount)
+       if (sourceAmount < amount) {
+           console.error("Source transaction does not contain " + amount + " tokens", sourceTx)
+           return
+       }
+       const tx = BigchainDB.Transaction.makeTransferTransaction(
             [{
-                tx: ownedTokens.transactions[0],// TODO: handle multiple unspent outputs (if needed)
-                output_index: ownedTokens.transactions[0].ownerOutputIdx
+                tx: sourceTx,// TODO: handle multiple unspent outputs (if needed)
+                output_index: sourceTx.ownerOutputIdx
             }],
             [BigchainDB.Transaction.makeOutput(
                 BigchainDB.Transaction
-                    .makeEd25519Condition(token.creator.publicKey),
-                (token.tokensLeft - amount).toString()),
+                    .makeEd25519Condition(me().publicKey),
+                (sourceAmount - amount).toString()),
                 BigchainDB.Transaction.makeOutput(
                     BigchainDB.Transaction
-                        .makeEd25519Condition(receiver.publicKey),
+                        .makeEd25519Condition(receiverPubKey),
                     amount.toString())
             ],
             metadata
@@ -74,17 +80,30 @@ export function getOwnedTokens(publicKey) {
     })
 }
 
+export function setSelectedTokenById(tokenId) {
+    return getTransaction(tokenId).then(createTx => {
+        selectedToken = {
+            createTx,
+            id: createTx.id,
+            creator: { publicKey: createTx.inputs[0].owners_before[0] },
+            tokensLeft: 'Unknown'
+        }
+        saveSelectedToken()
+    })
+}
+
 export function saveSelectedToken() {
     localStorage.setItem("currentToken", JSON.stringify(selectedToken))
+}
+
+export function dropSelectedToken() {
+    localStorage.removeItem("currentToken")
 }
 
 function loadSelectedToken() {
     const token = localStorage.getItem("currentToken")
     if (token) {
         selectedToken = JSON.parse(token)
-        if (selectedToken.creator.publicKey !== me().publicKey) {
-            selectedToken = null;
-        }
     }
 }
 

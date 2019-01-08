@@ -1,5 +1,5 @@
 import {recreateMe} from "./chain.js"
-import {tokenLaunch,selectedToken} from "./token.js"
+import {tokenLaunch, selectedToken, dropSelectedToken} from "./token.js"
 import {app} from "./main.js"
 import {createPresentation} from "./presentation.js"
 import {PresentationList} from "./presentationlist.js"
@@ -26,6 +26,7 @@ export const HostPage = Vue.component('host-page', {
         },
         newIdentity: function() {
             recreateMe()
+            dropSelectedToken()
             location.reload()
         },
         addPresentation: function() {

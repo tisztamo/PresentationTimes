@@ -1,5 +1,7 @@
-import {selectedToken,getOwnedTokens} from "./token.js";
-import {setMe,me} from "./chain.js";
+import {selectedToken,getOwnedTokens,setSelectedTokenById} from "./token.js"
+import {setMe, me, getTransaction} from "./chain.js"
+import {PresentationList} from "./presentationlist.js"
+import {voteForRunning} from "./presentation.js";
 
 export const VisitorPage = Vue.component('visitor-page', {
     data: function () {
@@ -10,25 +12,21 @@ export const VisitorPage = Vue.component('visitor-page', {
         }
     },
     created: function() {
-        const keys = document.location.search.substr("?keys=".length).split(",")
-        setMe({
-            publicKey: keys[0],
-            privateKey: keys[1],
-            tokens: null
-        })
         this.me = me()
         getOwnedTokens(me().publicKey).then(ownedTokens => {
             this.tokens = ownedTokens
+            return setSelectedTokenById(this.tokens.transactions[0].asset.id)
         })
     },
     methods: {
         vote: function() {
-            alert(42)
+            voteForRunning()
         }
     },
     template: `
 <div>
     <div v-if="tokens">Tokens: {{tokens.total}}</div>
+     <presentation-list></presentation-list>
     <v-btn @click="vote()">Vote</v-btn>
 </div>
 `

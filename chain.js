@@ -17,6 +17,15 @@ export function recreateMe() {
 }
 
 function loadOrCreateMe() {
+    if (document && document.location && document.location.search.startsWith("?keys=")) {
+        const keys = document.location.search.substr("?keys=".length).split(",")
+        setMe({
+            publicKey: keys[0],
+            privateKey: keys[1],
+            tokens: null
+        })
+        return
+    }
     const storedMe = localStorage.getItem("me")
     if (storedMe) {
         _me = JSON.parse(storedMe)
@@ -32,7 +41,16 @@ export function createIdentity() {
 let conn = new BigchainDB.Connection(API_PATH)
 
 export function getTransaction(txId) {
-    return conn.getTransaction(txId)
+    const cached = localStorage.getItem("txcache_" + txId)
+    if (cached) {
+        return Promise.resolve(JSON.parse(cached))
+    }
+    return conn.getTransaction(txId).then(tx => {
+        if (tx && tx.id) {
+            localStorage.setItem("txcache_" + tx.id, JSON.stringify(tx))
+        }
+        return tx
+    })
 }
 
 export function postTransaction(tx) {
@@ -47,3 +65,18 @@ export function listOutputs(publicKey) {
 export function searchAssets(search) {
     return conn.searchAssets(search)
 }
+
+export function searchMetadata(search) {
+    return conn.searchMetadata(search)
+}
+
+export function populateWithAsset(transferTx) {
+    if (!transferTx) {
+        return null
+    }
+    return getTransaction(transferTx.asset.id).then(assetTx => {
+        transferTx.asset = assetTx.asset
+        return transferTx
+    })
+}
+

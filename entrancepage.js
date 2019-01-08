@@ -5,7 +5,7 @@ import {QRCode} from "./lib/qrcode.js";
 
 function createVisitor() {
     const visitor = createIdentity()
-    return giveTokens(selectedToken, visitor, 5 * 5).then(res => {
+    return giveTokens(selectedToken, visitor.publicKey, 5 * 5).then(res => {
         return visitor
     })
 }
