@@ -1,7 +1,7 @@
 import {recreateMe} from "./chain.js"
 import {tokenLaunch, selectedToken, dropSelectedToken} from "./token.js"
 import {app} from "./main.js"
-import {createPresentation} from "./presentation.js"
+import {createPresentation, findRunningPresentation, grantTime} from "./presentation.js"
 import {PresentationList} from "./presentationlist.js"
 
 export const HostPage = Vue.component('host-page', {
@@ -24,6 +24,9 @@ export const HostPage = Vue.component('host-page', {
         entrance: function() {
             app.route("entrance")
         },
+        timer: function() {
+            app.route("timer")
+        },
         newIdentity: function() {
             recreateMe()
             dropSelectedToken()
@@ -42,6 +45,7 @@ export const HostPage = Vue.component('host-page', {
     <v-btn v-if="!token" @click="createToken()">Create Token</v-btn>
     <div v-if="token">Token: {{token.id}}</div>
     <v-btn @click="entrance()" v-if="token">Entrance View</v-btn>
+    <v-btn @click="timer()" v-if="token">Timer View</v-btn>
     <div v-if="token">
         <h3>Presentations</h3>
         <presentation-list></presentation-list>

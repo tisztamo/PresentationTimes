@@ -1,5 +1,6 @@
 import {selectedToken} from "./token.js";
 import {findPresentations, findRunningPresentation, startPresentation} from "./presentation.js";
+import {app} from "./main.js";
 
 export const PresentationList = Vue.component('presentation-list', {
     data: function () {
@@ -21,7 +22,9 @@ export const PresentationList = Vue.component('presentation-list', {
             }
         },
         start: function(presentation) {
-            startPresentation(presentation)
+            startPresentation(presentation).then(() => {
+                app.route("timer")
+            })
         }
     },
     created: function() {

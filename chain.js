@@ -75,6 +75,7 @@ export function populateWithAsset(transferTx) {
         return null
     }
     return getTransaction(transferTx.asset.id).then(assetTx => {
+        assetTx.asset.id = transferTx.asset.id
         transferTx.asset = assetTx.asset
         return transferTx
     })

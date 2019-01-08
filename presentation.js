@@ -1,4 +1,4 @@
-import {giveTokens, selectedToken} from "./token.js"
+import {getOwnedTokens, giveTokens, selectedToken} from "./token.js"
 import {
     createIdentity,
     me,
@@ -6,7 +6,7 @@ import {
     searchAssets,
     getTransaction,
     searchMetadata,
-    populateWithAsset
+    populateWithAsset, listOutputs
 } from "./chain.js"
 
 const PRESENTATION_STARTED= "presentation_started"
@@ -43,18 +43,46 @@ export function createPresentation(presenterName, title, abstract) {
     return postTransaction(tx)
 }
 
-export function startPresentation(presentation, grantedLength = 300) {
+export function startPresentation(presentation, grantedLength = 15) {
+    const timeStamp = Math.round(Date.now() / 1000)
     const tx = BigchainDB.Transaction.makeTransferTransaction(
         [{tx: presentation, output_index: 0}],
         [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition(me().publicKey))],
         {
             state: PRESENTATION_STARTED,
-            startTS: Math.round(Date.now() / 1000),
+            startTS: timeStamp,
+            ts: timeStamp,
             token: presentation.asset.data.token,
             grantedLength
         }
     )
     return postTransaction(tx)
+}
+
+export function grantTime(presentation, grantedLength = 15, usedTokens = 0) {
+    const timeStamp = Math.round(Date.now() / 1000)
+    const tx = BigchainDB.Transaction.makeTransferTransaction(
+        [{tx: presentation, output_index: 0}],
+        [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition(me().publicKey))],
+        {
+            state: PRESENTATION_STARTED,
+            startTS: presentation.metadata.startTS,
+            ts: timeStamp,
+            token: presentation.asset.data.token,
+            grantedLength: Number(presentation.metadata.grantedLength) + Number(grantedLength),
+            usedTokens
+        }
+    )
+    return postTransaction(tx)
+}
+
+export function autoGrant(presentation, neededNewTokens = 1) {
+    const presenterPublicKey = presentation.asset.data.presenterPublicKey
+    return getOwnedTokens(presenterPublicKey).then(tokens => {
+        if (tokens.total >= (presentation.metadata.usedTokens || 0) + neededNewTokens) {
+            return grantTime(presentation, 60, tokens.total)
+        }
+    })
 }
 
 export function findRunningPresentation() {
@@ -65,9 +93,9 @@ export function findRunningPresentation() {
         let found = null
         let maxTS = -Infinity
         for (let i = 0; i < filtered.length; i++) {
-            if (filtered[i].metadata.startTS > maxTS) {
+            if (filtered[i].metadata.ts > maxTS) {
                 found = filtered[i]
-                maxTS = filtered[i].metadata.startTS
+                maxTS = filtered[i].metadata.ts
             }
         }
         return found && maxTS > Date.now() / 1000 - found.metadata.grantedLength ? getTransaction(found.id) : null

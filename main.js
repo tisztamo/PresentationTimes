@@ -1,13 +1,15 @@
 import {HostPage} from "./hostpage.js"
-import {EntrancePage} from "./entrancepage.js";
-import {VisitorPage} from "./visitorpage.js";
+import {EntrancePage} from "./entrancepage.js"
+import {VisitorPage} from "./visitorpage.js"
+import {TimerPage} from "./timerpage.js"
 
 const NotFound = { template: '<p>Page not found</p>' }
 
 const routes = {
     '': HostPage,
     'visitor': VisitorPage,
-    'entrance': EntrancePage
+    'entrance': EntrancePage,
+    'timer': TimerPage
 }
 
 export const app = new Vue({
