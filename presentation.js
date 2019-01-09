@@ -43,7 +43,7 @@ export function createPresentation(presenterName, title, abstract) {
     return postTransaction(tx)
 }
 
-export function startPresentation(presentation, grantedLength = 15) {
+export function startPresentation(presentation, grantedLength = 20) {
     const timeStamp = Math.round(Date.now() / 1000)
     const tx = BigchainDB.Transaction.makeTransferTransaction(
         [{tx: presentation, output_index: 0}],
@@ -59,7 +59,7 @@ export function startPresentation(presentation, grantedLength = 15) {
     return postTransaction(tx)
 }
 
-export function grantTime(presentation, grantedLength = 15, usedTokens = 0) {
+export function grantTime(presentation, grantedLength = 20, usedTokens = 0) {
     const timeStamp = Math.round(Date.now() / 1000)
     const tx = BigchainDB.Transaction.makeTransferTransaction(
         [{tx: presentation, output_index: 0}],

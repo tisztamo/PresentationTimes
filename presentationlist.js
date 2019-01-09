@@ -3,6 +3,9 @@ import {findPresentations, findRunningPresentation, startPresentation} from "./p
 import {app} from "./main.js";
 
 export const PresentationList = Vue.component('presentation-list', {
+    props: {
+        host: Boolean
+    },
     data: function () {
         return {
             presentations: [],
@@ -34,10 +37,12 @@ export const PresentationList = Vue.component('presentation-list', {
     <div>
         <ul>
             <li v-for="pres in presentations">
-                {{ pres.asset.data.title }} <v-btn @click="start(pres)">Start</v-btn>
+                <div><b>{{ pres.asset.data.title }}</b> {{ pres.asset.data.presenter }}</div> 
+                <div>{{ pres.asset.data.abstract }}</div> 
+                <v-btn v-if="host" @click="start(pres)">Start</v-btn>
             </li>
         </ul>
-        Running presentation: {{ runningPresentation }}
+        <div v-if="runningPresentation">Running presentation: {{ runningPresentation.asset.data.title }}</div>
     </div>
     `
 })

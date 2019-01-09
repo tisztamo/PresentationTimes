@@ -10,8 +10,7 @@ export const HostPage = Vue.component('host-page', {
             token: selectedToken,
             presenterName: null,
             title: null,
-            abstract: null,
-            presentations: []
+            abstract: null
         }
     },
     methods: {
@@ -35,7 +34,7 @@ export const HostPage = Vue.component('host-page', {
         addPresentation: function() {
             createPresentation(this.presenterName, this.title, this.abstract).then(pres =>
             {
-                this.presentations.push(pres)
+                document.location.reload()
             })
         }
     },
@@ -48,7 +47,7 @@ export const HostPage = Vue.component('host-page', {
     <v-btn @click="timer()" v-if="token">Timer View</v-btn>
     <div v-if="token">
         <h3>Presentations</h3>
-        <presentation-list></presentation-list>
+        <presentation-list host="true"></presentation-list>
         <h3>Create Presentation</h3>
         <v-form>
             <v-text-field v-model="presenterName" placeholder="Presenter" single-line></v-text-field>

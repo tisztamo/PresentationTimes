@@ -51,7 +51,7 @@ export const TimerPage = Vue.component('timer-page', {
         },
         grantTime: function() {
             if (this.presentation) {
-                grantTime(this.presentation, 60).then(this.update.bind(this))
+                grantTime(this.presentation).then(this.update.bind(this))
             }
         },
         update: function() {
