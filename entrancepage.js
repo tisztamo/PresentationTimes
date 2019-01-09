@@ -45,7 +45,7 @@ export const EntrancePage = Vue.component('entrance-page', {
     <div v-if="selectedToken">Token: {{selectedToken.id}}</div>
     <v-btn @click="newVisitor()">New Visitor</v-btn>
     <v-btn @click="host()">Host View</v-btn>
-    <div id="qrcode"></div>
+    <div id="qrcode" style="margin: 20px"></div>
 </div>
 `
 })
