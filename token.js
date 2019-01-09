@@ -28,9 +28,13 @@ export function tokenLaunch(nTokens=1000000) {
     })
 }
 
+function findSourceTxForAmount(txs, amount) {
+    return txs.find(tx => Number(tx.outputs[tx.ownerOutputIdx].amount) >= amount)
+}
+
 export function giveTokens(token, receiverPubKey, amount, metadata = null) {
    return getOwnedTokens(me().publicKey).then(ownedTokens => {
-       const sourceTx = ownedTokens.transactions[0]
+       const sourceTx = findSourceTxForAmount(ownedTokens.transactions, amount)
        const sourceAmount = Number(sourceTx.outputs[sourceTx.ownerOutputIdx].amount)
        if (sourceAmount < amount) {
            console.error("Source transaction does not contain " + amount + " tokens", sourceTx)
