@@ -12,16 +12,19 @@ export const VisitorPage = Vue.component('visitor-page', {
         }
     },
     created: function() {
-        this.me = me()
-        getOwnedTokens(me().publicKey).then(ownedTokens => {
-            this.tokens = ownedTokens
-            return setSelectedTokenById(this.tokens.transactions[0].asset.id)
-        })
+        this.update()
     },
     methods: {
         vote: function() {
-            voteForRunning()
-        }
+            voteForRunning().then(this.update.bind(this))
+        },
+        update: function() {
+            this.me = me()
+            getOwnedTokens(me().publicKey).then(ownedTokens => {
+                this.tokens = ownedTokens
+                return setSelectedTokenById(this.tokens.transactions[0].asset.id)
+            })
+        },
     },
     template: `
 <div>

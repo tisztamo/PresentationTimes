@@ -103,7 +103,7 @@ export function findRunningPresentation() {
 }
 
 export function voteForRunning() {
-    findRunningPresentation().then(running => {
+    return findRunningPresentation().then(running => {
         if (!running) {
             alert("No active presentation found")
             return
