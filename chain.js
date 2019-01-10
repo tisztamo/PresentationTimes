@@ -81,3 +81,35 @@ export function populateWithAsset(transferTx) {
     })
 }
 
+
+function filetime_to_unixtimems(ft) {
+    const epoch_diff = 116444736000000000;
+    const rate_diff = 10000;
+    return Math.round((ft - epoch_diff) / rate_diff);
+}
+
+const syncedTS = {
+    serverTS: 0,
+    clientTS: 0
+}
+
+export function synchChainTime() {
+    const beforeTS = Date.now()
+    let clientTS = 0
+    fetch("http://worldclockapi.com/api/json/utc/now").then(response => {
+        clientTS = Math.round((Date.now() + beforeTS) / 2)
+        return response.json()
+    }).then(data => {
+        syncedTS.serverTS = filetime_to_unixtimems(Number(data.currentFileTime))
+        syncedTS.clientTS = clientTS
+    })
+}
+synchChainTime()
+
+export function getChainSynchedTS() {
+    return Date.now() - syncedTS.clientTS + syncedTS.serverTS
+}
+
+export function getChainTimeMillis() {
+    return Math.round(getChainSynchedTS() / 1000)
+}

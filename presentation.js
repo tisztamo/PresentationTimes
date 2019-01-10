@@ -6,7 +6,7 @@ import {
     searchAssets,
     getTransaction,
     searchMetadata,
-    populateWithAsset, listOutputs
+    populateWithAsset, listOutputs, getChainTimeMillis
 } from "./chain.js"
 
 const PRESENTATION_STARTED= "presentation_started"
@@ -43,8 +43,8 @@ export function createPresentation(presenterName, title, abstract) {
     return postTransaction(tx)
 }
 
-export function startPresentation(presentation, grantedLength = 20) {
-    const timeStamp = Math.round(Date.now() / 1000)
+export function startPresentation(presentation, grantedLength = 30) {
+    const timeStamp = getChainTimeMillis()
     const tx = BigchainDB.Transaction.makeTransferTransaction(
         [{tx: presentation, output_index: 0}],
         [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition(me().publicKey))],
@@ -60,7 +60,7 @@ export function startPresentation(presentation, grantedLength = 20) {
 }
 
 export function grantTime(presentation, grantedLength = 20, usedTokens = 0) {
-    const timeStamp = Math.round(Date.now() / 1000)
+    const timeStamp =getChainTimeMillis()
     const tx = BigchainDB.Transaction.makeTransferTransaction(
         [{tx: presentation, output_index: 0}],
         [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition(me().publicKey))],
@@ -76,11 +76,11 @@ export function grantTime(presentation, grantedLength = 20, usedTokens = 0) {
     return postTransaction(tx)
 }
 
-export function autoGrant(presentation, neededNewTokens = 1) {
+export function autoGrant(presentation, neededNewTokens = 1, grantedLength = 20) {
     const presenterPublicKey = presentation.asset.data.presenterPublicKey
     return getOwnedTokens(presenterPublicKey).then(tokens => {
         if (tokens.total >= (presentation.metadata.usedTokens || 0) + neededNewTokens) {
-            return grantTime(presentation, 60, tokens.total)
+            return grantTime(presentation, grantedLength, tokens.total)
         }
     })
 }
@@ -98,7 +98,7 @@ export function findRunningPresentation() {
                 maxTS = filtered[i].metadata.ts
             }
         }
-        return found && maxTS > Date.now() / 1000 - found.metadata.grantedLength ? getTransaction(found.id) : null
+        return found && maxTS > getChainTimeMillis() - found.metadata.grantedLength ? getTransaction(found.id) : null
     }).then(populateWithAsset)
 }
 

@@ -1,5 +1,6 @@
 import {app} from "./main.js";
 import {autoGrant, findRunningPresentation, grantTime} from "./presentation.js";
+import {getChainTimeMillis} from "./chain.js";
 
 function twoDigit(num) {
     return num < 10 ? "0" + num : "" + num
@@ -27,6 +28,9 @@ export const TimerPage = Vue.component('timer-page', {
         },
         granted: function() {
             return minsecs(this.grantedLength)
+        },
+        runnedOut: function() {
+            return this.grantedLength + 3 < this.runningForSecs
         }
     },
     created: function() {
@@ -38,7 +42,7 @@ export const TimerPage = Vue.component('timer-page', {
     },
     methods: {
         step: function() {
-            this.runningForSecs = Math.round(Date.now() / 1000) - this.startTS
+            this.runningForSecs = getChainTimeMillis() - this.startTS
             if (this.runningForSecs === this.grantedLength) {
                 this.autoGrant()
             }
@@ -47,7 +51,7 @@ export const TimerPage = Vue.component('timer-page', {
             app.route("")
         },
         autoGrant: function() {
-            autoGrant(this.presentation, 1).then(this.update.bind(this))
+            autoGrant(this.presentation, 2).then(this.update.bind(this))
         },
         grantTime: function() {
             if (this.presentation) {
@@ -64,10 +68,9 @@ export const TimerPage = Vue.component('timer-page', {
     },
     template: `
 <div>
-    <div class="display-4">{{timer}}</div>
+    <div class="display-4"><div v-bind:class="{ runnedOut: runnedOut }">{{timer}}</div></div>
     <div>Granted: {{granted}}</div>
     <v-btn @click="host()">Host view</v-btn>
-    <v-btn @click="autoGrant()">Grant Time</v-btn>
 </div>
 `
 })

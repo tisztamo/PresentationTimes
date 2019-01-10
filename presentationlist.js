@@ -37,7 +37,7 @@ export const PresentationList = Vue.component('presentation-list', {
     <div>
         <ul>
             <li v-for="pres in presentations">
-                <div><b>{{ pres.asset.data.title }}</b> {{ pres.asset.data.presenter }}</div> 
+                <div><b>{{ pres.asset.data.title }}</b> - {{ pres.asset.data.presenterName }}</div> 
                 <div>{{ pres.asset.data.abstract }}</div> 
                 <v-btn v-if="host" @click="start(pres)">Start</v-btn>
             </li>
