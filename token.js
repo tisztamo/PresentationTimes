@@ -17,13 +17,12 @@ export function tokenLaunch(nTokens=1000000) {
     )
 
     return postTransaction(tx).then(res => {
-        selectedToken = {
+        selectToken({
             id: res.id,
             tokensLeft: nTokens,
             creator: creator,
             createTx: res,
-        }
-        saveSelectedToken()
+        })
         return selectedToken
     })
 }
@@ -59,8 +58,7 @@ export function giveTokens(token, receiverPubKey, amount, metadata = null) {
 
         return postTransaction(tx).then(tx => {
             token.tokensLeft -= amount
-            selectedToken = token //TODO don't do this, persist separately
-            saveSelectedToken()
+            selectToken(token)
             return tx
         })
     })
@@ -84,19 +82,24 @@ export function getOwnedTokens(publicKey) {
     })
 }
 
-export function setSelectedTokenById(tokenId) {
+export function selectToken(token) {
+    selectedToken = token
+    saveSelectedToken()
+    return token
+}
+
+export function selectTokenById(tokenId) {
     return getTransaction(tokenId).then(createTx => {
-        selectedToken = {
+        selectToken({
             createTx,
             id: createTx.id,
             creator: { publicKey: createTx.inputs[0].owners_before[0] },
             tokensLeft: 'Unknown'
-        }
-        saveSelectedToken()
+        })
     })
 }
 
-export function saveSelectedToken() {
+function saveSelectedToken() {
     localStorage.setItem("currentToken", JSON.stringify(selectedToken))
 }
 
@@ -107,7 +110,7 @@ export function dropSelectedToken() {
 function loadSelectedToken() {
     const token = localStorage.getItem("currentToken")
     if (token) {
-        selectedToken = JSON.parse(token)
+        selectToken(JSON.parse(token))
     }
 }
 

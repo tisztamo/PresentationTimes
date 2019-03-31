@@ -1,4 +1,4 @@
-import {selectedToken,getOwnedTokens,setSelectedTokenById} from "./token.js"
+import {selectedToken,getOwnedTokens,selectTokenById} from "./token.js"
 import {setMe, me, getTransaction} from "./chain.js"
 import {PresentationList} from "./presentationlist.js"
 import {voteForRunning} from "./presentation.js";
@@ -22,7 +22,7 @@ export const VisitorPage = Vue.component('visitor-page', {
             this.me = me()
             getOwnedTokens(me().publicKey).then(ownedTokens => {
                 this.tokens = ownedTokens
-                return setSelectedTokenById(this.tokens.transactions[0].asset.id)
+                return selectTokenById(this.tokens.transactions[0].asset.id)
             })
         },
     },

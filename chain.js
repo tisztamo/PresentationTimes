@@ -1,5 +1,7 @@
-export const API_PATH = 'https://test.bigchaindb.com/api/v1/'
+export const API_BASE_URL = 'https://test.bigchaindb.com/api/v1/'
+export const WS_BASE_URL = 'wss://test.bigchaindb.com:443/api/v1/'
 
+let conn = new BigchainDB.Connection(API_BASE_URL)
 let _me = null;
 loadOrCreateMe()
 
@@ -14,6 +16,10 @@ export function setMe(newMe) {
 
 export function recreateMe() {
     setMe(createIdentity())
+}
+
+export function createIdentity() {
+    return new BigchainDB.Ed25519Keypair()
 }
 
 function loadOrCreateMe() {
@@ -33,12 +39,6 @@ function loadOrCreateMe() {
         recreateMe()
     }
 }
-
-export function createIdentity() {
-    return new BigchainDB.Ed25519Keypair()
-}
-
-let conn = new BigchainDB.Connection(API_PATH)
 
 export function getTransaction(txId) {
     const cached = localStorage.getItem("txcache_" + txId)
@@ -80,6 +80,7 @@ export function populateWithAsset(transferTx) {
         return transferTx
     })
 }
+
 
 
 function filetime_to_unixtimems(ft) {

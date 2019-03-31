@@ -1,8 +1,7 @@
 import {recreateMe} from "./chain.js"
 import {tokenLaunch, selectedToken, dropSelectedToken} from "./token.js"
 import {app} from "./main.js"
-import {createPresentation, findRunningPresentation, grantTime} from "./presentation.js"
-import {PresentationList} from "./presentationlist.js"
+import {createPresentation} from "./presentation.js"
 
 export const HostPage = Vue.component('host-page', {
     data: function () {

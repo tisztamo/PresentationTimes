@@ -6,7 +6,8 @@ import {
     searchAssets,
     getTransaction,
     searchMetadata,
-    populateWithAsset, listOutputs, getChainTimeMillis
+    populateWithAsset,
+    getChainTimeMillis
 } from "./chain.js"
 
 const PRESENTATION_STARTED= "presentation_started"

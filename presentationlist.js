@@ -1,6 +1,7 @@
 import {selectedToken} from "./token.js";
 import {findPresentations, findRunningPresentation, startPresentation} from "./presentation.js";
 import {app} from "./main.js";
+import {clearListener, listenForTransactions} from "./chainevents.js";
 
 export const PresentationList = Vue.component('presentation-list', {
     props: {
@@ -31,7 +32,15 @@ export const PresentationList = Vue.component('presentation-list', {
         }
     },
     created: function() {
+        this.txListeners = [];
         this.update()
+        this.txListeners.push(listenForTransactions([selectedToken.id], this.update.bind(this)))
+        findPresentations().then(presentations => {
+            this.txListeners.push(listenForTransactions(presentations.map(p => p.id), this.update.bind(this)))
+        })
+    },
+    beforeDestroy: function() {
+        this.txListeners.forEach(clearListener)
     },
     template: `
     <div>
