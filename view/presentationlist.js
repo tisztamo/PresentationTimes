@@ -1,7 +1,7 @@
-import {selectedToken} from "./token.js";
-import {findPresentations, findRunningPresentation, startPresentation} from "./presentation.js";
-import {app} from "./main.js";
-import {clearListener, listenForTransactions} from "./chainevents.js";
+import {selectedToken} from "../model/token.js";
+import {findPresentations, findRunningPresentation, startPresentation} from "../model/presentation.js";
+import {app} from "../main.js";
+import {clearListener, listenForTransactions} from "../model/chainevents.js";
 
 export const PresentationList = Vue.component('presentation-list', {
     props: {
@@ -43,15 +43,23 @@ export const PresentationList = Vue.component('presentation-list', {
         this.txListeners.forEach(clearListener)
     },
     template: `
-    <div>
-        <ul>
-            <li v-for="pres in presentations">
+<v-content>
+    <v-container fluid>
+        <div>
+            <div v-if="runningPresentation">Running presentation:
                 <div><b>{{ pres.asset.data.title }}</b> - {{ pres.asset.data.presenterName }}</div> 
-                <div>{{ pres.asset.data.abstract }}</div> 
-                <v-btn v-if="host" @click="start(pres)">Start</v-btn>
-            </li>
-        </ul>
-        <div v-if="runningPresentation">Running presentation: {{ runningPresentation.asset.data.title }}</div>
+                <div>{{ pres.asset.data.abstract }}</div>
+            </div>
+            --
+            <ul>
+                <li v-for="pres in presentations">
+                    <div><b>{{ pres.asset.data.title }}</b> - {{ pres.asset.data.presenterName }}</div> 
+                    <div>{{ pres.asset.data.abstract }}</div>
+                    <v-btn v-if="host" @click="start(pres)">Start</v-btn>
+                </li>
+            </ul>
     </div>
+    </v-container>
+</v-content>
     `
 })

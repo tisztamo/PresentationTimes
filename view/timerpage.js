@@ -1,6 +1,6 @@
-import {app} from "./main.js";
-import {autoGrant, findRunningPresentation, grantTime} from "./presentation.js";
-import {getChainTimeMillis} from "./chain.js";
+import {app} from "../main.js";
+import {autoGrant, findRunningPresentation, grantTime} from "../model/presentation.js";
+import {getChainTimeMillis} from "../model/chain.js";
 
 function twoDigit(num) {
     return num < 10 ? "0" + num : "" + num
@@ -67,10 +67,14 @@ export const TimerPage = Vue.component('timer-page', {
         }
     },
     template: `
-<div>
-    <div class="display-4"><div v-bind:class="{ runnedOut: runnedOut }">{{timer}}</div></div>
-    <div>Granted: {{granted}}</div>
-    <v-btn @click="host()">Host view</v-btn>
-</div>
+<v-content>
+    <v-container fluid>
+        <div>
+            <div class="display-4"><div v-bind:class="{ runnedOut: runnedOut }">{{timer}}</div></div>
+            <div>Granted: {{granted}}</div>
+            <v-btn @click="host()">Host view</v-btn>
+        </div>
+    </v-container>
+</v-content>
 `
 })

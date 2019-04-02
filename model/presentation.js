@@ -77,11 +77,17 @@ export function grantTime(presentation, grantedLength = 20, usedTokens = 0) {
     return postTransaction(tx)
 }
 
-export function autoGrant(presentation, neededNewTokens = 1, grantedLength = 20) {
+export function collectedVotesDuringLastPeriod(presentation) {
     const presenterPublicKey = presentation.asset.data.presenterPublicKey
     return getOwnedTokens(presenterPublicKey).then(tokens => {
-        if (tokens.total >= (presentation.metadata.usedTokens || 0) + neededNewTokens) {
-            return grantTime(presentation, grantedLength, tokens.total)
+        return tokens.total - (presentation.metadata.usedTokens || 0)
+    })
+}
+
+export function autoGrant(presentation, neededNewTokens = 1, grantedLength = 20) {
+    return collectedVotesDuringLastPeriod(presentation).then(tokens => {
+        if (tokens >= neededNewTokens) {
+            return grantTime(presentation, grantedLength, tokens + (presentation.metadata.usedTokens || 0))
         }
     })
 }

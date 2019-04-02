@@ -1,7 +1,7 @@
-import {HostPage} from "./hostpage.js"
-import {EntrancePage} from "./entrancepage.js"
-import {VisitorPage} from "./visitorpage.js"
-import {TimerPage} from "./timerpage.js"
+import {HostPage} from "./view/hostpage.js"
+import {EntrancePage} from "./view/entrancepage.js"
+import {VisitorPage} from "./view/visitorpage.js"
+import {TimerPage} from "./view/timerpage.js"
 
 const NotFound = { template: '<p>Page not found</p>' }
 

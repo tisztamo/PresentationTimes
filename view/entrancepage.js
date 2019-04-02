@@ -1,7 +1,7 @@
-import {app} from "./main.js"
-import {createIdentity} from "./chain.js"
-import {selectedToken,giveTokens} from "./token.js"
-import {QRCode} from "./lib/qrcode.js";
+import {app} from "../main.js"
+import {createIdentity} from "../model/chain.js"
+import {selectedToken,giveTokens} from "../model/token.js"
+import {QRCode} from "../lib/qrcode.js";
 
 function createVisitor() {
     const visitor = createIdentity()
@@ -27,7 +27,7 @@ function createVisitorQR(visitor) {
 export const EntrancePage = Vue.component('entrance-page', {
     data: function () {
         return {
-            selectedToken
+            selectedToken,
         }
     },
     methods: {
@@ -41,11 +41,14 @@ export const EntrancePage = Vue.component('entrance-page', {
         }
     },
     template: `
+  <v-content>
+    <v-container fluid>
 <div>
-    <div v-if="selectedToken">Token: {{selectedToken.id}}</div>
-    <v-btn @click="newVisitor()">New Visitor</v-btn>
-    <v-btn @click="host()">Host View</v-btn>
+    <h3>Generate new code for every visitor!</h3>
+    <div v-if="!selectedToken">No token found</div>
+    <v-btn v-if="selectedToken" @click="newVisitor()">New Visitor</v-btn>
     <div id="qrcode" style="margin: 20px"></div>
+    <v-btn @click="host()">Back to Host View</v-btn>
 </div>
 `
 })

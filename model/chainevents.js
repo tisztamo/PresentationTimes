@@ -1,4 +1,4 @@
-import {ReconnectingWebSocket} from "./lib/reconnecting-websocket.js"
+import {ReconnectingWebSocket} from "../lib/reconnecting-websocket.js"
 import {getTransaction, WS_BASE_URL} from "./chain.js"
 
 const WS_URL = WS_BASE_URL + "streams/valid_transactions"
