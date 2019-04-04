@@ -1,0 +1,4 @@
+parcel build --public-url '.' index.html 
+git add dist
+git commit -m "dist updated"
+git subtree push --prefix dist origin gh-pages
