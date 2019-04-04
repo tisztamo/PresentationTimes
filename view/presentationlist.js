@@ -5,7 +5,8 @@ import {clearListener, listenForTransactions} from "../model/chainevents.js";
 
 export const PresentationList = Vue.component('presentation-list', {
     props: {
-        host: Boolean
+        host: Boolean,
+        voteForRunning: Function
     },
     data: function () {
         return {
@@ -27,8 +28,12 @@ export const PresentationList = Vue.component('presentation-list', {
         },
         start: function(presentation) {
             startPresentation(presentation).then(() => {
+                document.getElementById("bellSound").play()
                 app.route("timer")
             })
+        },
+        vote: function() {
+            this.$emit("vote")
         }
     },
     created: function() {
@@ -47,13 +52,14 @@ export const PresentationList = Vue.component('presentation-list', {
     <v-container fluid>
         <div>
             <div v-if="runningPresentation">Running presentation:
-                <div><b>{{ runningPresentation.asset.data.title }}</b> - {{ runningPresentation.asset.data.presenterName }}</div> 
+                <div><b>{{ runningPresentation.asset.data.title }} - {{ runningPresentation.asset.data.presenterName }}</b></div> 
                 <div>{{ runningPresentation.asset.data.abstract }}</div>
+                 <v-btn v-if="voteForRunning" @click="vote()">Vote</v-btn>
             </div>
             --
             <ul>
                 <li v-for="pres in presentations">
-                    <div><b>{{ pres.asset.data.title }}</b> - {{ pres.asset.data.presenterName }}</div> 
+                    <div><b>{{ pres.asset.data.title }} - {{ pres.asset.data.presenterName }}</b></div> 
                     <div>{{ pres.asset.data.abstract }}</div>
                     <v-btn v-if="host" @click="start(pres)">Start</v-btn>
                 </li>

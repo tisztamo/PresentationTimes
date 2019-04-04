@@ -573,9 +573,11 @@ var HostPage = Vue.component('host-page', {
       _main.app.route("timer");
     },
     newIdentity: function newIdentity() {
-      (0, _chain.recreateMe)();
-      (0, _token.dropSelectedToken)();
-      location.reload();
+      if (window.confirm("Are you sure to create new identity?")) {
+        (0, _chain.recreateMe)();
+        (0, _token.dropSelectedToken)();
+        location.reload();
+      }
     },
     addPresentation: function addPresentation() {
       (0, _presentation.createPresentation)(this.presenterName, this.title, this.abstract).then(function (pres) {
@@ -583,7 +585,7 @@ var HostPage = Vue.component('host-page', {
       });
     }
   },
-  template: "\n  <v-content>\n    <v-container fluid>\n    <div>\n        <v-btn @click=\"newIdentity()\">New Identity</v-btn>\n        <v-btn v-if=\"!token\" @click=\"createToken()\">Create Token</v-btn>\n        <div v-if=\"token\">Token: {{token.id}}</div>\n        <v-btn @click=\"entrance()\" v-if=\"token\">Entrance View</v-btn>\n        <v-btn @click=\"timer()\" v-if=\"token\">Timer View</v-btn>\n        <div v-if=\"token\">\n            <h3>Presentations</h3>\n            <presentation-list host=\"true\"></presentation-list>\n            <h3>Create Presentation</h3>\n            <v-form>\n                <v-text-field v-model=\"presenterName\" placeholder=\"Presenter\" single-line></v-text-field>\n                <v-text-field v-model=\"title\" placeholder=\"Title\"></v-text-field>\n                <v-textarea v-model=\"abstract\" placeholder=\"Abstract\"></v-textarea>\n                <v-btn v-if=\"title\" @click=\"addPresentation()\">Create Presentation</v-btn>        \n            </v-form>\n        </div>\n    </div>\n    </v-container>\n</v-content>\n"
+  template: "\n  <v-content>\n    <v-container fluid>\n    <div>\n        <v-btn v-if=\"!token\" @click=\"createToken()\">Create Token</v-btn>\n        <div>\n            <span v-if=\"token\">Token: {{token.id}}</span>\n            <a href=\"\" @click=\"newIdentity()\">New Identity</a>\n        </div>\n        <v-btn @click=\"entrance()\" v-if=\"token\">Entrance View</v-btn>\n        <v-btn @click=\"timer()\" v-if=\"token\">Timer View</v-btn>\n        <div v-if=\"token\">\n            <h3>Presentations</h3>\n            <presentation-list host=\"true\"></presentation-list>\n            <h3>Create Presentation</h3>\n            <v-form>\n                <v-text-field v-model=\"presenterName\" placeholder=\"Presenter\" single-line></v-text-field>\n                <v-text-field v-model=\"title\" placeholder=\"Title\"></v-text-field>\n                <v-textarea v-model=\"abstract\" placeholder=\"Abstract\"></v-textarea>\n                <v-btn v-if=\"title\" @click=\"addPresentation()\">Create Presentation</v-btn>        \n            </v-form>\n        </div>\n        \n    </div>\n    </v-container>\n</v-content>\n"
 });
 exports.HostPage = HostPage;
 },{"../model/chain.js":"model/chain.js","../model/token.js":"model/token.js","../main.js":"main.js","../model/presentation.js":"model/presentation.js"}],"lib/qrcode.js":[function(require,module,exports) {
@@ -2421,6 +2423,7 @@ var EntrancePage = Vue.component('entrance-page', {
         _this.newVisitor();
       }
     }));
+    this.newVisitor();
   },
   beforeDestroy: function beforeDestroy() {
     this.txListeners.forEach(_chainevents.clearListener);
@@ -2438,7 +2441,7 @@ var EntrancePage = Vue.component('entrance-page', {
       _main.app.route("");
     }
   },
-  template: "\n  <v-content>\n    <v-container fluid>\n<div>\n    <h3>Generate new code for every visitor!</h3>\n    <div v-if=\"!selectedToken\">No token found</div>\n    <v-btn v-if=\"selectedToken\" @click=\"newVisitor()\">New Visitor</v-btn>\n    <div id=\"qrcode\" style=\"margin: 20px\"></div>\n    <v-btn @click=\"host()\">Back to Host View</v-btn>\n</div>\n"
+  template: "\n  <v-content>\n    <v-container fluid>\n<div>\n    <div v-if=\"!selectedToken\">No token found</div>\n    <div id=\"qrcode\" style=\"margin: 20px\"></div>\n    <v-btn v-if=\"selectedToken\" @click=\"newVisitor()\">New Visitor</v-btn>\n    <v-btn @click=\"host()\">Back to Host View</v-btn>\n</div>\n"
 });
 exports.EntrancePage = EntrancePage;
 },{"../main.js":"main.js","../model/chain.js":"model/chain.js","../model/token.js":"model/token.js","../lib/qrcode.js":"lib/qrcode.js","../model/chainevents.js":"model/chainevents.js"}],"view/presentationlist.js":[function(require,module,exports) {
@@ -2459,7 +2462,8 @@ var _chainevents = require("../model/chainevents.js");
 
 var PresentationList = Vue.component('presentation-list', {
   props: {
-    host: Boolean
+    host: Boolean,
+    voteForRunning: Function
   },
   data: function data() {
     return {
@@ -2483,8 +2487,13 @@ var PresentationList = Vue.component('presentation-list', {
     },
     start: function start(presentation) {
       (0, _presentation.startPresentation)(presentation).then(function () {
+        document.getElementById("bellSound").play();
+
         _main.app.route("timer");
       });
+    },
+    vote: function vote() {
+      this.$emit("vote");
     }
   },
   created: function created() {
@@ -2502,7 +2511,7 @@ var PresentationList = Vue.component('presentation-list', {
   beforeDestroy: function beforeDestroy() {
     this.txListeners.forEach(_chainevents.clearListener);
   },
-  template: "\n<v-content>\n    <v-container fluid>\n        <div>\n            <div v-if=\"runningPresentation\">Running presentation:\n                <div><b>{{ runningPresentation.asset.data.title }}</b> - {{ runningPresentation.asset.data.presenterName }}</div> \n                <div>{{ runningPresentation.asset.data.abstract }}</div>\n            </div>\n            --\n            <ul>\n                <li v-for=\"pres in presentations\">\n                    <div><b>{{ pres.asset.data.title }}</b> - {{ pres.asset.data.presenterName }}</div> \n                    <div>{{ pres.asset.data.abstract }}</div>\n                    <v-btn v-if=\"host\" @click=\"start(pres)\">Start</v-btn>\n                </li>\n            </ul>\n    </div>\n    </v-container>\n</v-content>\n    "
+  template: "\n<v-content>\n    <v-container fluid>\n        <div>\n            <div v-if=\"runningPresentation\">Running presentation:\n                <div><b>{{ runningPresentation.asset.data.title }} - {{ runningPresentation.asset.data.presenterName }}</b></div> \n                <div>{{ runningPresentation.asset.data.abstract }}</div>\n                 <v-btn v-if=\"voteForRunning\" @click=\"vote()\">Vote</v-btn>\n            </div>\n            --\n            <ul>\n                <li v-for=\"pres in presentations\">\n                    <div><b>{{ pres.asset.data.title }} - {{ pres.asset.data.presenterName }}</b></div> \n                    <div>{{ pres.asset.data.abstract }}</div>\n                    <v-btn v-if=\"host\" @click=\"start(pres)\">Start</v-btn>\n                </li>\n            </ul>\n    </div>\n    </v-container>\n</v-content>\n    "
 });
 exports.PresentationList = PresentationList;
 },{"../model/token.js":"model/token.js","../model/presentation.js":"model/presentation.js","../main.js":"main.js","../model/chainevents.js":"model/chainevents.js"}],"view/visitorpage.js":[function(require,module,exports) {
@@ -2552,7 +2561,7 @@ var VisitorPage = Vue.component('visitor-page', {
       });
     }
   },
-  template: "\n<v-content>\n    <v-container fluid>\n        <div v-if=\"tokens\">Tokens: {{tokens.total}}</div>\n         <presentation-list></presentation-list>\n        <v-btn v-if=\"!voteInProgress\" @click=\"vote()\">Vote</v-btn>\n    </v-container>\n</v-content>\n"
+  template: "\n<v-content>\n    <v-container fluid>\n        <div v-if=\"tokens\">Tokens: {{tokens.total}}</div>\n        <presentation-list v-if=\"!voteInProgress\" voteForRunning=true @vote=\"vote\" ></presentation-list>\n        <div v-if=\"voteInProgress\">Committing vote...</div>\n    </v-container>\n</v-content>\n"
 });
 exports.VisitorPage = VisitorPage;
 },{"../model/token.js":"model/token.js","../model/chain.js":"model/chain.js","./presentationlist.js":"view/presentationlist.js","../model/presentation.js":"model/presentation.js"}],"view/timerpage.js":[function(require,module,exports) {
@@ -2619,20 +2628,24 @@ var TimerPage = Vue.component('timer-page', {
       _main.app.route("");
     },
     autoGrant: function autoGrant() {
-      (0, _presentation.autoGrant)(this.presentation, 2).then(this.update.bind(this));
-    },
-    grantTime: function grantTime() {
-      if (this.presentation) {
-        (0, _presentation.grantTime)(this.presentation).then(this.update.bind(this));
-      }
-    },
-    update: function update() {
       var _this = this;
 
+      (0, _presentation.autoGrant)(this.presentation, 2).then(function (result) {
+        if (!result) {
+          console.log("No more time granted");
+          document.getElementById("bellSound").play();
+        }
+
+        _this.update();
+      });
+    },
+    update: function update() {
+      var _this2 = this;
+
       (0, _presentation.findRunningPresentation)().then(function (presentation) {
-        _this.presentation = presentation;
-        _this.grantedLength = presentation.metadata.grantedLength;
-        _this.startTS = presentation.metadata.startTS;
+        _this2.presentation = presentation;
+        _this2.grantedLength = presentation.metadata.grantedLength;
+        _this2.startTS = presentation.metadata.startTS;
       });
     }
   },
@@ -2763,7 +2776,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33197" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46219" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -2939,4 +2952,4 @@ function hmrAcceptRun(bundle, id) {
   }
 }
 },{}]},{},["../../bin/node-v10.14.1-linux-x64/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","main.js"], null)
-//# sourceMappingURL=main.1f19ae8e.js.map
+//# sourceMappingURL=/main.1f19ae8e.js.map

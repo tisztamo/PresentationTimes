@@ -39,6 +39,7 @@ export const EntrancePage = Vue.component('entrance-page', {
                 this.newVisitor()
             }
         }))
+        this.newVisitor()
     },
     beforeDestroy: function() {
         this.txListeners.forEach(clearListener)
@@ -58,10 +59,9 @@ export const EntrancePage = Vue.component('entrance-page', {
   <v-content>
     <v-container fluid>
 <div>
-    <h3>Generate new code for every visitor!</h3>
     <div v-if="!selectedToken">No token found</div>
-    <v-btn v-if="selectedToken" @click="newVisitor()">New Visitor</v-btn>
     <div id="qrcode" style="margin: 20px"></div>
+    <v-btn v-if="selectedToken" @click="newVisitor()">New Visitor</v-btn>
     <v-btn @click="host()">Back to Host View</v-btn>
 </div>
 `

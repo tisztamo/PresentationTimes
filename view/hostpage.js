@@ -26,9 +26,11 @@ export const HostPage = Vue.component('host-page', {
             app.route("timer")
         },
         newIdentity: function() {
-            recreateMe()
-            dropSelectedToken()
-            location.reload()
+            if (window.confirm("Are you sure to create new identity?")) {
+                recreateMe()
+                dropSelectedToken()
+                location.reload()
+            }
         },
         addPresentation: function() {
             createPresentation(this.presenterName, this.title, this.abstract).then(pres =>
@@ -41,9 +43,11 @@ export const HostPage = Vue.component('host-page', {
   <v-content>
     <v-container fluid>
     <div>
-        <v-btn @click="newIdentity()">New Identity</v-btn>
         <v-btn v-if="!token" @click="createToken()">Create Token</v-btn>
-        <div v-if="token">Token: {{token.id}}</div>
+        <div>
+            <span v-if="token">Token: {{token.id}}</span>
+            <a href="" @click="newIdentity()">New Identity</a>
+        </div>
         <v-btn @click="entrance()" v-if="token">Entrance View</v-btn>
         <v-btn @click="timer()" v-if="token">Timer View</v-btn>
         <div v-if="token">
@@ -57,6 +61,7 @@ export const HostPage = Vue.component('host-page', {
                 <v-btn v-if="title" @click="addPresentation()">Create Presentation</v-btn>        
             </v-form>
         </div>
+        
     </div>
     </v-container>
 </v-content>

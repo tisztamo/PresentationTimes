@@ -51,12 +51,13 @@ export const TimerPage = Vue.component('timer-page', {
             app.route("")
         },
         autoGrant: function() {
-            autoGrant(this.presentation, 2).then(this.update.bind(this))
-        },
-        grantTime: function() {
-            if (this.presentation) {
-                grantTime(this.presentation).then(this.update.bind(this))
-            }
+            autoGrant(this.presentation, 2).then(result => {
+                if (!result) {
+                    console.log("No more time granted")
+                    document.getElementById("bellSound").play()
+                }
+                this.update()
+            })
         },
         update: function() {
             findRunningPresentation().then(presentation => {
