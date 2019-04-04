@@ -2,6 +2,7 @@ import {app} from "../main.js"
 import {createIdentity} from "../model/chain.js"
 import {selectedToken,giveTokens} from "../model/token.js"
 import {QRCode} from "../lib/qrcode.js";
+import {clearListener, listenForTransactions} from "../model/chainevents.js";
 
 function createVisitor() {
     const visitor = createIdentity()
@@ -11,7 +12,7 @@ function createVisitor() {
 }
 
 function createVisitorQR(visitor) {
-    const target =  location.origin + location.pathname + "?keys=" + visitor.publicKey + "," + visitor.privateKey + "#visitor"
+    const target =  location.origin + location.pathname + "?keys=" + visitor.publicKey + "," + visitor.privateKey + "#keyload"
     console.log(target)
     document.getElementById("qrcode").innerHTML = '';
     const qrcode = new QRCode(document.getElementById("qrcode"), {
@@ -28,12 +29,25 @@ export const EntrancePage = Vue.component('entrance-page', {
     data: function () {
         return {
             selectedToken,
+            txListeners: [],
+            lastVisitorPubKey: null
         }
+    },
+    created: function() {
+        this.txListeners.push(listenForTransactions([selectedToken.id], (tx) => {
+            if (tx.inputs[0].owners_before[0] == this.lastVisitorPubKey) {
+                this.newVisitor()
+            }
+        }))
+    },
+    beforeDestroy: function() {
+        this.txListeners.forEach(clearListener)
     },
     methods: {
         newVisitor: function() {
             createVisitor().then(visitor => {
                 createVisitorQR(visitor)
+                this.lastVisitorPubKey = visitor.publicKey
             })
         },
         host: function() {

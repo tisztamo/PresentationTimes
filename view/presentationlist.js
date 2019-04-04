@@ -47,8 +47,8 @@ export const PresentationList = Vue.component('presentation-list', {
     <v-container fluid>
         <div>
             <div v-if="runningPresentation">Running presentation:
-                <div><b>{{ pres.asset.data.title }}</b> - {{ pres.asset.data.presenterName }}</div> 
-                <div>{{ pres.asset.data.abstract }}</div>
+                <div><b>{{ runningPresentation.asset.data.title }}</b> - {{ runningPresentation.asset.data.presenterName }}</div> 
+                <div>{{ runningPresentation.asset.data.abstract }}</div>
             </div>
             --
             <ul>

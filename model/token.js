@@ -1,4 +1,4 @@
-import {me, postTransaction, getTransaction, listOutputs} from "./chain.js"
+import {me, postTransaction, getTransaction, listOutputs, recreateMe, createIdentity, setMe} from "./chain.js"
 
 export let selectedToken = null
 
@@ -39,20 +39,28 @@ export function giveTokens(token, receiverPubKey, amount, metadata = null) {
            console.error("Source transaction does not contain " + amount + " tokens", sourceTx)
            return
        }
+       const remaining = sourceAmount - amount;
+       const outputs = []
+       if (remaining > 0) {
+           outputs.push(
+               BigchainDB.Transaction.makeOutput(
+                   BigchainDB.Transaction
+                       .makeEd25519Condition(me().publicKey),
+                   (remaining).toString())
+           )
+       }
+       outputs.push(
+           BigchainDB.Transaction.makeOutput(
+               BigchainDB.Transaction
+                   .makeEd25519Condition(receiverPubKey),
+               amount.toString())
+       )
        const tx = BigchainDB.Transaction.makeTransferTransaction(
             [{
                 tx: sourceTx,// TODO: handle multiple unspent outputs (if needed)
                 output_index: sourceTx.ownerOutputIdx
             }],
-            [BigchainDB.Transaction.makeOutput(
-                BigchainDB.Transaction
-                    .makeEd25519Condition(me().publicKey),
-                (sourceAmount - amount).toString()),
-                BigchainDB.Transaction.makeOutput(
-                    BigchainDB.Transaction
-                        .makeEd25519Condition(receiverPubKey),
-                    amount.toString())
-            ],
+            outputs,
             metadata
         )
 
@@ -81,6 +89,14 @@ export function getOwnedTokens(publicKey) {
         })
     })
 }
+export function transferAllToNewIdentity() {
+    const newMe = createIdentity()
+    return getOwnedTokens(me().publicKey).then(ownedTokens => {
+       return giveTokens(selectedToken, newMe.publicKey, ownedTokens.total).then(() => {
+           setMe(newMe)
+       })
+    })
+}
 
 export function selectToken(token) {
     selectedToken = token
@@ -90,7 +106,7 @@ export function selectToken(token) {
 
 export function selectTokenById(tokenId) {
     return getTransaction(tokenId).then(createTx => {
-        selectToken({
+        return selectToken({
             createTx,
             id: createTx.id,
             creator: { publicKey: createTx.inputs[0].owners_before[0] },
