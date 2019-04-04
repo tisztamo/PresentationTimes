@@ -128,6 +128,7 @@ exports.setMe = setMe;
 exports.recreateMe = recreateMe;
 exports.createIdentity = createIdentity;
 exports.getTransaction = getTransaction;
+exports.simpleOutput = simpleOutput;
 exports.postTransaction = postTransaction;
 exports.listOutputs = listOutputs;
 exports.searchAssets = searchAssets;
@@ -196,6 +197,10 @@ function getTransaction(txId) {
 
     return tx;
   });
+}
+
+function simpleOutput(publicKey, amount) {
+  return BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition(publicKey), amount);
 }
 
 function postTransaction(tx) {
@@ -287,7 +292,7 @@ function tokenLaunch() {
     number_tokens: nTokens
   }, {
     datetime: new Date().toString()
-  }, [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition(creator.publicKey), nTokens.toString())], creator.publicKey);
+  }, [(0, _chain.simpleOutput)(creator.publicKey, nTokens.toString())], creator.publicKey);
   return (0, _chain.postTransaction)(tx).then(function (res) {
     selectToken({
       id: res.id,
@@ -320,10 +325,10 @@ function giveTokens(token, receiverPubKey, amount) {
     var outputs = [];
 
     if (remaining > 0) {
-      outputs.push(BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition((0, _chain.me)().publicKey), remaining.toString()));
+      outputs.push((0, _chain.simpleOutput)((0, _chain.me)().publicKey, remaining.toString()));
     }
 
-    outputs.push(BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition(receiverPubKey), amount.toString()));
+    outputs.push((0, _chain.simpleOutput)(receiverPubKey, amount.toString()));
     var tx = BigchainDB.Transaction.makeTransferTransaction([{
       tx: sourceTx,
       // TODO: handle multiple unspent outputs (if needed)
@@ -424,9 +429,10 @@ var _token = require("./token.js");
 var _chain = require("./chain.js");
 
 var PRESENTATION_STARTED = "presentation_started";
+var PRESENTATION = "presentation";
 
 function findPresentations() {
-  return (0, _chain.searchAssets)("xpresentation").then(function (assets) {
+  return (0, _chain.searchAssets)(PRESENTATION).then(function (assets) {
     return Promise.all(assets.filter(function (asset) {
       return asset.data.token === _token.selectedToken.id;
     }).map(function (asset) {
@@ -439,7 +445,7 @@ function createPresentation(presenterName, title, abstract) {
   var presenter = (0, _chain.createIdentity)();
   var creator = (0, _chain.me)();
   var presentation = {
-    type: 'xpresentation',
+    type: PRESENTATION,
     presenterName: presenterName,
     title: title,
     abstract: abstract,
@@ -448,17 +454,17 @@ function createPresentation(presenterName, title, abstract) {
   };
   var tx = BigchainDB.Transaction.makeCreateTransaction(presentation, {
     datetime: new Date().toString()
-  }, [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition(creator.publicKey))], creator.publicKey);
+  }, [(0, _chain.simpleOutput)(creator.publicKey)], creator.publicKey);
   return (0, _chain.postTransaction)(tx);
 }
 
 function startPresentation(presentation) {
-  var grantedLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 30;
+  var grantedLength = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 240;
   var timeStamp = (0, _chain.getChainTimeMillis)();
   var tx = BigchainDB.Transaction.makeTransferTransaction([{
     tx: presentation,
     output_index: 0
-  }], [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition((0, _chain.me)().publicKey))], {
+  }], [(0, _chain.simpleOutput)((0, _chain.me)().publicKey)], {
     state: PRESENTATION_STARTED,
     startTS: timeStamp,
     ts: timeStamp,
@@ -475,7 +481,7 @@ function grantTime(presentation) {
   var tx = BigchainDB.Transaction.makeTransferTransaction([{
     tx: presentation,
     output_index: 0
-  }], [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition((0, _chain.me)().publicKey))], {
+  }], [(0, _chain.simpleOutput)((0, _chain.me)().publicKey)], {
     state: PRESENTATION_STARTED,
     startTS: presentation.metadata.startTS,
     ts: timeStamp,
@@ -495,10 +501,13 @@ function collectedVotesDuringLastPeriod(presentation) {
 
 function autoGrant(presentation) {
   var neededNewTokens = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-  var grantedLength = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 20;
+  var grantedLength = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 60;
   return collectedVotesDuringLastPeriod(presentation).then(function (tokens) {
     if (tokens >= neededNewTokens) {
+      console.log("Granting " + grantedLength + " secs on " + tokens + " votes.");
       return grantTime(presentation, grantedLength, tokens + (presentation.metadata.usedTokens || 0));
+    } else {
+      console.log(String(tokens) + " votes are not enough...");
     }
   });
 }
@@ -2388,7 +2397,7 @@ var _chainevents = require("../model/chainevents.js");
 
 function createVisitor() {
   var visitor = (0, _chain.createIdentity)();
-  return (0, _token.giveTokens)(_token.selectedToken, visitor.publicKey, 5 * 5).then(function (res) {
+  return (0, _token.giveTokens)(_token.selectedToken, visitor.publicKey, 11).then(function (res) {
     return visitor;
   });
 }
@@ -2600,13 +2609,13 @@ var TimerPage = Vue.component('timer-page', {
   },
   computed: {
     timer: function timer() {
-      return minsecs(this.runningForSecs);
+      return minsecs(this.startTS ? this.runningForSecs : 0);
     },
     granted: function granted() {
-      return minsecs(this.grantedLength);
+      return minsecs(this.startTS ? this.grantedLength : 0);
     },
     runnedOut: function runnedOut() {
-      return this.grantedLength + 3 < this.runningForSecs;
+      return this.grantedLength + 1 < this.runningForSecs;
     }
   },
   created: function created() {
@@ -2630,7 +2639,7 @@ var TimerPage = Vue.component('timer-page', {
     autoGrant: function autoGrant() {
       var _this = this;
 
-      (0, _presentation.autoGrant)(this.presentation, 2).then(function (result) {
+      (0, _presentation.autoGrant)(this.presentation, 5).then(function (result) {
         if (!result) {
           console.log("No more time granted");
           document.getElementById("bellSound").play();
@@ -2776,7 +2785,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46219" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36455" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
