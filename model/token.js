@@ -1,4 +1,12 @@
-import {me, postTransaction, getTransaction, listOutputs, recreateMe, createIdentity, setMe} from "./chain.js"
+import {
+    me,
+    postTransaction,
+    getTransaction,
+    listOutputs,
+    createIdentity,
+    setMe,
+    simpleOutput
+} from "./chain.js"
 
 export let selectedToken = null
 
@@ -11,8 +19,7 @@ export function tokenLaunch(nTokens=1000000) {
         {
             datetime: new Date().toString()
         },
-        [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction
-            .makeEd25519Condition(creator.publicKey), nTokens.toString())],
+        [simpleOutput(creator.publicKey, nTokens.toString())],
         creator.publicKey
     )
 
@@ -42,19 +49,9 @@ export function giveTokens(token, receiverPubKey, amount, metadata = null) {
        const remaining = sourceAmount - amount;
        const outputs = []
        if (remaining > 0) {
-           outputs.push(
-               BigchainDB.Transaction.makeOutput(
-                   BigchainDB.Transaction
-                       .makeEd25519Condition(me().publicKey),
-                   (remaining).toString())
-           )
+           outputs.push(simpleOutput(me().publicKey, (remaining).toString()))
        }
-       outputs.push(
-           BigchainDB.Transaction.makeOutput(
-               BigchainDB.Transaction
-                   .makeEd25519Condition(receiverPubKey),
-               amount.toString())
-       )
+       outputs.push(simpleOutput(receiverPubKey, amount.toString()))
        const tx = BigchainDB.Transaction.makeTransferTransaction(
             [{
                 tx: sourceTx,// TODO: handle multiple unspent outputs (if needed)

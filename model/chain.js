@@ -53,6 +53,11 @@ export function getTransaction(txId) {
     })
 }
 
+export function simpleOutput(publicKey, amount) {
+    return BigchainDB.Transaction.makeOutput(
+        BigchainDB.Transaction.makeEd25519Condition(publicKey), amount)
+}
+
 export function postTransaction(tx) {
     const txSigned = BigchainDB.Transaction.signTransaction(tx, me().privateKey)
     return conn.postTransactionCommit(txSigned)

@@ -7,13 +7,14 @@ import {
     getTransaction,
     searchMetadata,
     populateWithAsset,
-    getChainTimeMillis
+    getChainTimeMillis, simpleOutput
 } from "./chain.js"
 
 const PRESENTATION_STARTED= "presentation_started"
+const PRESENTATION = "presentation"
 
 export function findPresentations() {
-    return searchAssets("xpresentation").then(assets => {
+    return searchAssets(PRESENTATION).then(assets => {
         return Promise.all(assets.filter(asset => {
             return asset.data.token === selectedToken.id
         }).map(asset => getTransaction(asset.id)))
@@ -24,31 +25,29 @@ export function createPresentation(presenterName, title, abstract) {
     const presenter = createIdentity()
     const creator = me()
     const presentation = {
-        type: 'xpresentation',
+        type: PRESENTATION,
         presenterName,
         title,
         abstract,
         presenterPublicKey: presenter.publicKey,
         token: selectedToken.id,
-    };
+    }
     const tx = BigchainDB.Transaction.makeCreateTransaction(
         presentation,
         {
             datetime: new Date().toString()
         },
-        [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction
-            .makeEd25519Condition(creator.publicKey))],
+        [simpleOutput(creator.publicKey)],
         creator.publicKey
     )
-
     return postTransaction(tx)
 }
 
-export function startPresentation(presentation, grantedLength = 30) {
+export function startPresentation(presentation, grantedLength = 240) {
     const timeStamp = getChainTimeMillis()
     const tx = BigchainDB.Transaction.makeTransferTransaction(
         [{tx: presentation, output_index: 0}],
-        [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition(me().publicKey))],
+        [simpleOutput(me().publicKey)],
         {
             state: PRESENTATION_STARTED,
             startTS: timeStamp,
@@ -64,7 +63,7 @@ export function grantTime(presentation, grantedLength = 20, usedTokens = 0) {
     const timeStamp =getChainTimeMillis()
     const tx = BigchainDB.Transaction.makeTransferTransaction(
         [{tx: presentation, output_index: 0}],
-        [BigchainDB.Transaction.makeOutput(BigchainDB.Transaction.makeEd25519Condition(me().publicKey))],
+        [simpleOutput(me().publicKey)],
         {
             state: PRESENTATION_STARTED,
             startTS: presentation.metadata.startTS,
@@ -84,10 +83,13 @@ export function collectedVotesDuringLastPeriod(presentation) {
     })
 }
 
-export function autoGrant(presentation, neededNewTokens = 1, grantedLength = 20) {
+export function autoGrant(presentation, neededNewTokens = 1, grantedLength = 60) {
     return collectedVotesDuringLastPeriod(presentation).then(tokens => {
         if (tokens >= neededNewTokens) {
+            console.log("Granting " + grantedLength + " secs on " + tokens + " votes.")
             return grantTime(presentation, grantedLength, tokens + (presentation.metadata.usedTokens || 0))
+        } else {
+            console.log(String(tokens) + " votes are not enough...")
         }
     })
 }

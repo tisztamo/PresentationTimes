@@ -6,7 +6,7 @@ import {clearListener, listenForTransactions} from "../model/chainevents.js";
 
 function createVisitor() {
     const visitor = createIdentity()
-    return giveTokens(selectedToken, visitor.publicKey, 5 * 5).then(res => {
+    return giveTokens(selectedToken, visitor.publicKey, 11).then(res => {
         return visitor
     })
 }

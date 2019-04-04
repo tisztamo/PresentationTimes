@@ -24,13 +24,13 @@ export const TimerPage = Vue.component('timer-page', {
     },
     computed: {
         timer: function() {
-            return minsecs(this.runningForSecs)
+            return minsecs(this.startTS ? this.runningForSecs : 0)
         },
         granted: function() {
-            return minsecs(this.grantedLength)
+            return minsecs(this.startTS ? this.grantedLength : 0)
         },
         runnedOut: function() {
-            return this.grantedLength + 3 < this.runningForSecs
+            return this.grantedLength + 1 < this.runningForSecs
         }
     },
     created: function() {
@@ -51,7 +51,7 @@ export const TimerPage = Vue.component('timer-page', {
             app.route("")
         },
         autoGrant: function() {
-            autoGrant(this.presentation, 2).then(result => {
+            autoGrant(this.presentation, 5).then(result => {
                 if (!result) {
                     console.log("No more time granted")
                     document.getElementById("bellSound").play()
