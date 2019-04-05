@@ -541,63 +541,7 @@ function voteForRunning() {
     return (0, _token.giveTokens)(_token.selectedToken, running.asset.data.presenterPublicKey, 1);
   });
 }
-},{"./token.js":"model/token.js","./chain.js":"model/chain.js"}],"view/hostpage.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.HostPage = void 0;
-
-var _chain = require("../model/chain.js");
-
-var _token = require("../model/token.js");
-
-var _main = require("../main.js");
-
-var _presentation = require("../model/presentation.js");
-
-var HostPage = Vue.component('host-page', {
-  data: function data() {
-    return {
-      token: _token.selectedToken,
-      presenterName: null,
-      title: null,
-      abstract: null
-    };
-  },
-  methods: {
-    createToken: function createToken() {
-      var _this = this;
-
-      return (0, _token.tokenLaunch)().then(function (t) {
-        _this.token = t;
-        console.log("Token created: " + t.id);
-      });
-    },
-    entrance: function entrance() {
-      _main.app.route("entrance");
-    },
-    timer: function timer() {
-      _main.app.route("timer");
-    },
-    newIdentity: function newIdentity() {
-      if (window.confirm("Are you sure to create new identity?")) {
-        (0, _chain.recreateMe)();
-        (0, _token.dropSelectedToken)();
-        location.reload();
-      }
-    },
-    addPresentation: function addPresentation() {
-      (0, _presentation.createPresentation)(this.presenterName, this.title, this.abstract).then(function (pres) {
-        document.location.reload();
-      });
-    }
-  },
-  template: "\n  <v-content>\n    <v-container fluid>\n    <div>\n        <v-btn v-if=\"!token\" @click=\"createToken()\">Create Token</v-btn>\n        <div>\n            <span v-if=\"token\">Token: {{token.id}}</span>\n            <a href=\"\" @click=\"newIdentity()\">New Identity</a>\n        </div>\n        <v-btn @click=\"entrance()\" v-if=\"token\">Entrance View</v-btn>\n        <v-btn @click=\"timer()\" v-if=\"token\">Timer View</v-btn>\n        <div v-if=\"token\">\n            <h3>Presentations</h3>\n            <presentation-list host=\"true\"></presentation-list>\n            <h3>Create Presentation</h3>\n            <v-form>\n                <v-text-field v-model=\"presenterName\" placeholder=\"Presenter\" single-line></v-text-field>\n                <v-text-field v-model=\"title\" placeholder=\"Title\"></v-text-field>\n                <v-textarea v-model=\"abstract\" placeholder=\"Abstract\"></v-textarea>\n                <v-btn v-if=\"title\" @click=\"addPresentation()\">Create Presentation</v-btn>        \n            </v-form>\n        </div>\n        \n    </div>\n    </v-container>\n</v-content>\n"
-});
-exports.HostPage = HostPage;
-},{"../model/chain.js":"model/chain.js","../model/token.js":"model/token.js","../main.js":"main.js","../model/presentation.js":"model/presentation.js"}],"lib/qrcode.js":[function(require,module,exports) {
+},{"./token.js":"model/token.js","./chain.js":"model/chain.js"}],"lib/qrcode.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1913,7 +1857,91 @@ function QRCode() {
 
 QRCode.prototype = _QRCode.prototype;
 QRCode.CorrectLevel = _QRCode.CorrectLevel;
-},{}],"lib/reconnecting-websocket.js":[function(require,module,exports) {
+},{}],"view/qr.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.createQR = createQR;
+
+var _qrcode = require("../lib/qrcode.js");
+
+function createQR(identity) {
+  var target = location.origin + location.pathname + "?keys=" + identity.publicKey + "," + identity.privateKey + "#keyload";
+  console.log(target);
+  document.getElementById("qrcode").innerHTML = '';
+  var qrcode = new _qrcode.QRCode(document.getElementById("qrcode"), {
+    text: target,
+    width: 384,
+    height: 384,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: _qrcode.QRCode.CorrectLevel.H
+  });
+}
+},{"../lib/qrcode.js":"lib/qrcode.js"}],"view/hostpage.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.HostPage = void 0;
+
+var _chain = require("../model/chain.js");
+
+var _token = require("../model/token.js");
+
+var _main = require("../main.js");
+
+var _presentation = require("../model/presentation.js");
+
+var _qr = require("./qr.js");
+
+var HostPage = Vue.component('host-page', {
+  data: function data() {
+    return {
+      token: _token.selectedToken,
+      presenterName: null,
+      title: null,
+      abstract: null
+    };
+  },
+  methods: {
+    createToken: function createToken() {
+      var _this = this;
+
+      return (0, _token.tokenLaunch)().then(function (t) {
+        _this.token = t;
+        console.log("Token created: " + t.id);
+      });
+    },
+    entrance: function entrance() {
+      _main.app.route("entrance");
+    },
+    timer: function timer() {
+      _main.app.route("timer");
+    },
+    newIdentity: function newIdentity() {
+      if (window.confirm("Are you sure to create new identity?")) {
+        (0, _chain.recreateMe)();
+        (0, _token.dropSelectedToken)();
+        location.reload();
+      }
+    },
+    addPresentation: function addPresentation() {
+      (0, _presentation.createPresentation)(this.presenterName, this.title, this.abstract).then(function (pres) {
+        document.location.reload();
+      });
+    },
+    clone: function clone() {
+      (0, _qr.createQR)((0, _chain.me)());
+    }
+  },
+  template: "\n  <v-content>\n    <v-container fluid>\n    <div>\n        <v-btn v-if=\"!token\" @click=\"createToken()\">Create Token</v-btn>\n        <div>\n            <span v-if=\"token\">Token: {{token.id}}</span>\n            <a href=\"\" @click=\"newIdentity()\">New Identity</a>\n        </div>\n        <v-btn @click=\"entrance()\" v-if=\"token\">Entrance View</v-btn>\n        <v-btn @click=\"timer()\" v-if=\"token\">Timer View</v-btn>\n        <div v-if=\"token\">\n            <h3>Presentations</h3>\n            <presentation-list host=\"true\"></presentation-list>\n            <h3>Create Presentation</h3>\n            <v-form>\n                <v-text-field v-model=\"presenterName\" placeholder=\"Presenter\" single-line></v-text-field>\n                <v-text-field v-model=\"title\" placeholder=\"Title\"></v-text-field>\n                <v-textarea v-model=\"abstract\" placeholder=\"Abstract\"></v-textarea>\n                <v-btn v-if=\"title\" @click=\"addPresentation()\">Create Presentation</v-btn>        \n            </v-form>\n        </div>\n        <v-btn @click=\"clone()\">Clone identity</v-btn>        \n        <div id=\"qrcode\" style=\"margin: 20px\"></div>        \n    </div>\n    </v-container>\n</v-content>\n"
+});
+exports.HostPage = HostPage;
+},{"../model/chain.js":"model/chain.js","../model/token.js":"model/token.js","../main.js":"main.js","../model/presentation.js":"model/presentation.js","./qr.js":"view/qr.js"}],"lib/reconnecting-websocket.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2391,28 +2419,14 @@ var _chain = require("../model/chain.js");
 
 var _token = require("../model/token.js");
 
-var _qrcode = require("../lib/qrcode.js");
-
 var _chainevents = require("../model/chainevents.js");
+
+var _qr = require("./qr.js");
 
 function createVisitor() {
   var visitor = (0, _chain.createIdentity)();
   return (0, _token.giveTokens)(_token.selectedToken, visitor.publicKey, 11).then(function (res) {
     return visitor;
-  });
-}
-
-function createVisitorQR(visitor) {
-  var target = location.origin + location.pathname + "?keys=" + visitor.publicKey + "," + visitor.privateKey + "#keyload";
-  console.log(target);
-  document.getElementById("qrcode").innerHTML = '';
-  var qrcode = new _qrcode.QRCode(document.getElementById("qrcode"), {
-    text: target,
-    width: 384,
-    height: 384,
-    colorDark: "#000000",
-    colorLight: "#ffffff",
-    correctLevel: _qrcode.QRCode.CorrectLevel.H
   });
 }
 
@@ -2442,7 +2456,7 @@ var EntrancePage = Vue.component('entrance-page', {
       var _this2 = this;
 
       createVisitor().then(function (visitor) {
-        createVisitorQR(visitor);
+        (0, _qr.createQR)(visitor);
         _this2.lastVisitorPubKey = visitor.publicKey;
       });
     },
@@ -2453,7 +2467,7 @@ var EntrancePage = Vue.component('entrance-page', {
   template: "\n  <v-content>\n    <v-container fluid>\n<div>\n    <div v-if=\"!selectedToken\">No token found</div>\n    <div id=\"qrcode\" style=\"margin: 20px\"></div>\n    <v-btn v-if=\"selectedToken\" @click=\"newVisitor()\">New Visitor</v-btn>\n    <v-btn @click=\"host()\">Back to Host View</v-btn>\n</div>\n"
 });
 exports.EntrancePage = EntrancePage;
-},{"../main.js":"main.js","../model/chain.js":"model/chain.js","../model/token.js":"model/token.js","../lib/qrcode.js":"lib/qrcode.js","../model/chainevents.js":"model/chainevents.js"}],"view/presentationlist.js":[function(require,module,exports) {
+},{"../main.js":"main.js","../model/chain.js":"model/chain.js","../model/token.js":"model/token.js","../model/chainevents.js":"model/chainevents.js","./qr.js":"view/qr.js"}],"view/presentationlist.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2785,7 +2799,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36455" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "38113" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
