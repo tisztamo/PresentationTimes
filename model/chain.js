@@ -108,7 +108,7 @@ export function synchChainTime() {
         syncedTS.clientTS = clientTS
     })
 }
-synchChainTime()
+//synchChainTime()
 
 export function getChainSynchedTS() {
     return Date.now() - syncedTS.clientTS + syncedTS.serverTS
