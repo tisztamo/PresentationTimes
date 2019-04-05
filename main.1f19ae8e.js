@@ -2712,7 +2712,7 @@ var KeyLoadPage = Vue.component('keyload-page', {
         }
 
         return (0, _token.selectTokenById)(_this.tokens.transactions[0].asset.id).then(_token.transferAllToNewIdentity).then(function () {
-          document.location.href = document.location.pathname + '#visitor';
+          document.location.href = document.location.pathname + '#keyloadresult';
         });
       }).catch(function () {
         return _this.noTokensFound = true;
@@ -2722,7 +2722,23 @@ var KeyLoadPage = Vue.component('keyload-page', {
   template: "\n<v-content>\n    <v-container fluid>\n        <div v-if=\"tokens && !noTokensFound\">Creating identity and transferrig {{tokens.total}} tokens...</div>\n        <div v-if=\"noTokensFound\">No tokens found, maybe QR code was already used</div>\n    </v-container>\n</v-content>\n"
 });
 exports.KeyLoadPage = KeyLoadPage;
-},{"../model/token.js":"model/token.js","../model/chain.js":"model/chain.js"}],"main.js":[function(require,module,exports) {
+},{"../model/token.js":"model/token.js","../model/chain.js":"model/chain.js"}],"view/keyloadresult.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.KeyLoadResultPage = void 0;
+var KeyLoadResultPage = Vue.component('keyload-page', {
+  created: function created() {
+    setTimeout(function () {
+      document.location.href = document.location.pathname + '?x=1#visitor';
+    }, 500);
+  },
+  template: "\n<v-content>\n    <v-container fluid>\n        <div>Identity generated, starting app...</div>\n    </v-container>\n</v-content>\n"
+});
+exports.KeyLoadResultPage = KeyLoadResultPage;
+},{}],"main.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2740,6 +2756,8 @@ var _timerpage = require("./view/timerpage.js");
 
 var _keyloadpage = require("./view/keyloadpage.js");
 
+var _keyloadresult = require("./view/keyloadresult.js");
+
 var NotFound = {
   template: '<p>Page not found</p>'
 };
@@ -2748,7 +2766,8 @@ var routes = {
   'visitor': _visitorpage.VisitorPage,
   'entrance': _entrancepage.EntrancePage,
   'timer': _timerpage.TimerPage,
-  'keyload': _keyloadpage.KeyLoadPage
+  'keyload': _keyloadpage.KeyLoadPage,
+  'keyloadresult': _keyloadresult.KeyLoadResultPage
 };
 var app = new Vue({
   el: '#app',
@@ -2771,7 +2790,7 @@ var app = new Vue({
   }
 });
 exports.app = app;
-},{"./view/hostpage.js":"view/hostpage.js","./view/entrancepage.js":"view/entrancepage.js","./view/visitorpage.js":"view/visitorpage.js","./view/timerpage.js":"view/timerpage.js","./view/keyloadpage.js":"view/keyloadpage.js"}],"../../bin/node-v10.14.1-linux-x64/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./view/hostpage.js":"view/hostpage.js","./view/entrancepage.js":"view/entrancepage.js","./view/visitorpage.js":"view/visitorpage.js","./view/timerpage.js":"view/timerpage.js","./view/keyloadpage.js":"view/keyloadpage.js","./view/keyloadresult.js":"view/keyloadresult.js"}],"../../bin/node-v10.14.1-linux-x64/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -2799,7 +2818,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "38113" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "42939" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
