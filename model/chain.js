@@ -86,8 +86,6 @@ export function populateWithAsset(transferTx) {
     })
 }
 
-
-
 function filetime_to_unixtimems(ft) {
     const epoch_diff = 116444736000000000;
     const rate_diff = 10000;

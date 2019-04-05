@@ -3,6 +3,7 @@ import {EntrancePage} from "./view/entrancepage.js"
 import {VisitorPage} from "./view/visitorpage.js"
 import {TimerPage} from "./view/timerpage.js"
 import {KeyLoadPage} from "./view/keyloadpage.js";
+import {KeyLoadResultPage} from "./view/keyloadresult.js";
 
 const NotFound = { template: '<p>Page not found</p>' }
 
@@ -11,7 +12,8 @@ const routes = {
     'visitor': VisitorPage,
     'entrance': EntrancePage,
     'timer': TimerPage,
-    'keyload': KeyLoadPage
+    'keyload': KeyLoadPage,
+    'keyloadresult': KeyLoadResultPage
 }
 
 export const app = new Vue({

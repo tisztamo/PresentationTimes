@@ -23,7 +23,7 @@ export const KeyLoadPage = Vue.component('keyload-page', {
                 }
                 return selectTokenById(this.tokens.transactions[0].asset.id)
                     .then(transferAllToNewIdentity).then(() => {
-                        document.location.href = document.location.pathname + '#visitor'
+                        document.location.href = document.location.pathname + '#keyloadresult'
                     })
             }).catch(() => this.noTokensFound = true)
         },
