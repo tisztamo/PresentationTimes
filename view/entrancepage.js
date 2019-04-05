@@ -1,27 +1,13 @@
 import {app} from "../main.js"
 import {createIdentity} from "../model/chain.js"
 import {selectedToken,giveTokens} from "../model/token.js"
-import {QRCode} from "../lib/qrcode.js";
 import {clearListener, listenForTransactions} from "../model/chainevents.js";
+import {createQR} from "./qr.js";
 
 function createVisitor() {
     const visitor = createIdentity()
     return giveTokens(selectedToken, visitor.publicKey, 11).then(res => {
         return visitor
-    })
-}
-
-function createVisitorQR(visitor) {
-    const target =  location.origin + location.pathname + "?keys=" + visitor.publicKey + "," + visitor.privateKey + "#keyload"
-    console.log(target)
-    document.getElementById("qrcode").innerHTML = '';
-    const qrcode = new QRCode(document.getElementById("qrcode"), {
-        text: target,
-        width: 384,
-        height: 384,
-        colorDark : "#000000",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.H
     })
 }
 
@@ -47,7 +33,7 @@ export const EntrancePage = Vue.component('entrance-page', {
     methods: {
         newVisitor: function() {
             createVisitor().then(visitor => {
-                createVisitorQR(visitor)
+                createQR(visitor)
                 this.lastVisitorPubKey = visitor.publicKey
             })
         },

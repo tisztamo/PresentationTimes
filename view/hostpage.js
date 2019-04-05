@@ -1,7 +1,8 @@
-import {recreateMe} from "../model/chain.js"
+import {me, recreateMe} from "../model/chain.js"
 import {tokenLaunch, selectedToken, dropSelectedToken} from "../model/token.js"
 import {app} from "../main.js"
 import {createPresentation} from "../model/presentation.js"
+import {createQR} from "./qr.js";
 
 export const HostPage = Vue.component('host-page', {
     data: function () {
@@ -37,6 +38,9 @@ export const HostPage = Vue.component('host-page', {
             {
                 document.location.reload()
             })
+        },
+        clone: function() {
+            createQR(me())
         }
     },
     template: `
@@ -61,7 +65,8 @@ export const HostPage = Vue.component('host-page', {
                 <v-btn v-if="title" @click="addPresentation()">Create Presentation</v-btn>        
             </v-form>
         </div>
-        
+        <v-btn @click="clone()">Clone identity</v-btn>        
+        <div id="qrcode" style="margin: 20px"></div>        
     </div>
     </v-container>
 </v-content>
